@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Portal</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Portal</h1>
+        <button onclick="location.href='/logout'">Logout</button>
+
+        <h2>Add Product</h2>
+        <form action="/admin/add-product" method="post" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="Product Name" required>
+            <select name="category">
+                <option value="living">Living</option>
+                <option value="dining">Dining</option>
+                <option value="bedroom">Bedroom</option>
+                <option value="office">Office</option>
+            </select>
+            <select name="size">
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+            </select>
+            <input type="number" name="price" placeholder="Price" required>
+            <input type="number" name="stock" placeholder="Stock Availability" required>
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit">Add Product</button>
+        </form>
+
+        <h2>Edit Product</h2>
+        <form action="/admin/add-product" method="post" enctype="multipart/form-data">
+            <input type="text" name="name" placeholder="Product Name" required>
+            <select name="category">
+                <option value="living">Living</option>
+                <option value="dining">Dining</option>
+                <option value="bedroom">Bedroom</option>
+                <option value="office">Office</option>
+            </select>
+            <select name="size">
+                <option value="small">Small</option>
+                <option value="medium">Medium</option>
+                <option value="large">Large</option>
+            </select>
+            <input type="number" name="price" placeholder="Price" required>
+            <input type="number" name="stock" placeholder="Stock Availability" required>
+            <input type="file" name="image" accept="image/*" required> <!-- File input for images -->
+            <button type="submit">Add Product</button>
+        </form>
+        
+
+        <h2>Delete Product</h2>
+        <form action="/admin/delete-product" method="post">
+            <input type="number" name="id" placeholder="Product ID" required>
+            <button type="submit">Delete Product</button>
+        </form>
+        <h2>Low Stock Products</h2>
+        <div id="low-stock-items">
+            <!-- Low stock items will be listed here -->
+        </div>
+
+        <h2>Sales Reports</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Size</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total Amount</th>
+                <th>Sale Date</th>
+                <th>Refunded</th>
+                <th>Customer</th>
+            </tr>
+        </thead>
+        <tbody id="sales-report-data">
+            <!-- Sales data will be injected here -->
+        </tbody>
+    </table>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchLowStockItems();
+        
+            function fetchLowStockItems() {
+                fetch('/api/low-stock-products')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(products => {
+                        const container = document.getElementById('low-stock-items');
+                        container.innerHTML = ''; // Clear existing content
+                        products.forEach(product => {
+                            container.innerHTML += `
+                                <div>
+                                    <p><strong>Product ID:</strong> ${product.id}</p>
+                                    <p><strong>Name:</strong> ${product.name}</p>
+                                    <p><strong>Stock:</strong> ${product.stock}</p>
+                                </div>`;
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching low stock products:', error);
+                        // Optionally, update the UI to show an error message
+                    });
+            }
+
+            
+
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/api/sales-report')
+                .then(response => response.json())
+                .then(data => {
+                    const reportTable = document.getElementById('sales-report-data');
+                    reportTable.innerHTML = data.map(item => `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td>${item.category}</td>
+                            <td>${item.size}</td>
+                            <td>${item.quantity}</td>
+                            <td>$${item.price.toFixed(2)}</td>
+                            <td>$${(item.quantity * item.price).toFixed(2)}</td>
+                            <td>${new Date(item.sale_date).toLocaleDateString()}</td>
+                            <td>${item.is_refunded ? 'Yes' : 'No'}</td>
+                            <td>${item.customer || 'N/A'}</td>
+                        </tr>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading sales reports:', error);
+                    reportTable.innerHTML = '<tr><td colspan="9">Failed to load data</td></tr>';
+                });
+        });
+        function fetchSalesReports() {
+                fetch('/api/sales-report')
+                    .then(response => response.json())
+                    .then(data => {
+                        const reportsContainer = document.getElementById('sales-reports');
+                        reportsContainer.innerHTML = data.map(report => `
+                            <tr>
+                                <td>${report.name}</td>
+                                <td>${report.category}</td>
+                                <td>${report.size}</td>
+                                <td>${report.quantity}</td>
+                                <td>$${report.price}</td>
+                                <td>$${report.total_amount}</td>
+                                <td>${new Date(report.sale_date).toLocaleDateString()}</td>
+                                <td>${report.is_refunded ? 'Yes' : 'No'}</td>
+                                <td>${report.customer || 'N/A'}</td>
+                            </tr>
+                        `).join('');
+                    })
+                    .catch(error => console.error('Error fetching sales reports:', error));
+            }
+        </script>
+        
+
+    
+</body>
+</html>

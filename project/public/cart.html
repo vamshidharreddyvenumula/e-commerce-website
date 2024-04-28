@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Collection</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css"> <!-- Your custom CSS file -->
+    <style>
+        /* Custom styles */
+        .cart-item { 
+            background-color: #fff; /* White background */
+            padding: 15px;          
+            margin-bottom: 15px;    
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);   
+        }
+        #cart-total {
+            background-color: #f0f0f0; /* Light gray background */
+            padding: 15px;
+            margin-top: 20px;   
+            border-radius: 5px;
+            position: relative;
+        }
+        .footer {
+            position: relative;
+            bottom: 0;
+            width: 100%; /* Make it stretch across the viewport */
+        }
+        .modal {
+            display: none;     /* Initially hidden */
+            position: fixed;   /* Stay in place */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Dimmed background */
+            z-index: 1000; /* Ensure the modal is on top */
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;  /* Center the modal */
+            padding: 20px;
+            width: 40%;        /* Adjust width as needed */
+            border-radius: 5px;  
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); 
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .modal-content form h3 {
+            margin-bottom: 15px;
+        }
+
+        .modal-content form div {
+            margin-bottom: 10px; 
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <a class="navbar-brand" href="/index.html">Home Collection</a>
+                <form class="form-inline my-2 my-lg-0 ml-auto" id="search-form">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="search-input">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+                <ul class="navbar-nav ml-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-shopping-cart"></i> Cart</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-user"></i> Account</a>
+                    </li>
+                    <!-- Logout Button -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <h2>Shopping Cart</h2>
+        <div id="cart-items">
+            <!-- Cart items will be dynamically populated here -->
+        </div>
+        <div id="cart-total">
+            <!-- Cart total and checkout button will be displayed here -->
+        </div>
+        <button id="checkout-btn" class="btn btn-primary">Purchase</button>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="cart.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script> <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <footer class="footer">
+        <div class="container-fluid bg-dark text-white py-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <p>Phone: +123456789</p>
+                    <p>Location: Your Location</p>
+                    <p>Email: info@example.com</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Follow Us</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="bg-secondary text-center py-2">
+            <p>&copy; 2024 Home Collection. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Include jQuery and other necessary scripts -->
+
+    <script>
+        $(document).ready(function() {
+            console.log("Document is ready");
+
+            // Function to fetch cart data from the server and populate the cart page
+            window.loadCart = function() {
+                $.ajax({
+                    url: '/api/cart',
+                    type: 'GET',
+                    success: function(cartData) {
+                        console.log('Cart data fetched successfully:', cartData);
+                        renderCart(cartData);
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        console.log('Error fetching cart data:', textStatus, errorThrown);
+                        alert('Error fetching cart data');
+                    }
+                });
+            }
+
+            
+
+            // Function to render cart items on the page
+            function renderCart(cartData) {
+                const cartItemsContainer = $('#cart-items');
+                cartItemsContainer.empty(); // Clear existing content
+
+                cartData.forEach(item => {
+                    const cartItemHTML = `
+                        <div class="cart-item">
+                            <p>Name: ${item.name}</p>
+                            <p>Quantity: ${item.quantity}</p>
+                            <p>Price: $${item.price}</p>
+                            <p>Subtotal: $${item.price * item.quantity}</p>
+                            <button class="remove-from-cart-btn" data-product-id="${item.id}">Remove</button>
+                        </div>
+                    `;
+                    cartItemsContainer.append(cartItemHTML);
+                });
+                
+                // Calculate and display the total price of the cart
+                const total = cartData.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+                $('#cart-total').html(`<p>Total: $${total}</p>`);
+
+              
+
+
+                
+            }
+            $('#checkout-btn').click(function() {
+            const cartData = []; // Array to hold all cart item data
+
+            $('#cart-items .cart-item').each(function() {
+                const item = {
+                    productId: $(this).find('.remove-from-cart-btn').data('product-id'),
+                    quantity: parseInt($(this).find('input.quantity').val(), 10),
+                    price: parseFloat($(this).find('.price').text().replace('$', '')),
+                    customerId: 1 // Assuming a fixed customer ID for now
+                };
+                cartData.push(item);
+            });
+
+            completeSale(cartData);
+        });
+
+
+
+
+        
+
+            // Load cart data when the cart page loads
+            loadCart();
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('search-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                var searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+
+                switch (searchQuery) {
+                    case 'living':
+                        window.location.href = 'living.html';
+                        break;
+                    case 'dining':
+                        window.location.href = 'dining.html';
+                        break;
+                    case 'bedroom':
+                        window.location.href = 'bedroom.html';
+                        break;
+                    case 'office':
+                        window.location.href = 'office.html';
+                        break;
+                    default:
+                        alert('Invalid search. Please try again.');
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

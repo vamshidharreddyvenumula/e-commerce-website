@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="styles1.css"> </head>
+<body>
+  <div class="container">
+    <h2>Login</h2>
+    <div>
+      <button id="admin-btn">Admin</button>
+      <button id="user-btn">User</button>
+    </div>
+    <form id="admin-login-form" action="/admin-login" method="POST" style="display: none;">
+      <label for="admin-username">Admin Username:</label>
+      <input type="text" id="admin-username" name="adminUsername" required>
+      <label for="admin-password">Password:</label>
+      <input type="password" id="admin-password" name="adminPassword" required>
+      <button type="submit">Login</button>
+    </form>
+
+    <form id="user-login-form" action="/user-login" method="POST" style="display: none;">
+      <label for="user-username">Username:</label>
+      <input type="text" id="user-username" name="username" required>  
+      <label for="user-password">Password:</label>
+      <input type="password" id="user-password" name="password" required>  
+      <button type="submit">Login</button>
+    </form>
+
+    <p>Don't have an account? <a href="signup.html">Sign up here</a>.</p>
+  </div>
+
+  <script>
+    const adminBtn = document.getElementById('admin-btn');
+    const userBtn = document.getElementById('user-btn');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const userLoginForm = document.getElementById('user-login-form');
+    
+
+    adminBtn.addEventListener('click', () => {
+      adminLoginForm.style.display = 'block';
+      userLoginForm.style.display = 'none';
+    });
+
+    userBtn.addEventListener('click', () => {
+      userLoginForm.style.display = 'block';
+      adminLoginForm.style.display = 'none';
+    });
+
+    // Basic client-side validation (optional)
+    const loginForms = document.querySelectorAll('form');
+
+    loginForms.forEach(form => {
+      form.addEventListener('submit', (event) => {
+        const usernameInput = form.querySelector('input[name="username"]');
+        const passwordInput = form.querySelector('input[name="password"]');
+
+        // Check if username and password are empty
+        if (!usernameInput.value || !passwordInput.value) {
+          event.preventDefault(); // Prevent form submission
+          alert('Please fill in both Username and Password!');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

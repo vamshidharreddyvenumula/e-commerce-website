@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Collection</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css"> <!-- Your custom CSS file -->
+    <style>
+        /* Custom styles */
+        .product {
+            background-color: white; /* Set white background */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-basis: calc(33.333% - 20px);
+            margin: 10px;
+
+        }
+        .add-to-cart-btn {
+            background-color: #007bff; /* Set blue color */
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .add-to-cart-btn:hover {
+            background-color: #0056b3; /* Darker shade of blue on hover */
+        }
+        #product-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <a class="navbar-brand" href="/index.html">Home Collection</a>
+                <form class="form-inline my-2 my-lg-0 ml-auto" id="search-form">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="search-input">
+                    <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+                </form>
+                <ul class="navbar-nav ml-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/cart.html"><i class="fas fa-shopping-cart"></i> Cart</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#"><i class="fas fa-user"></i> Account</a>
+                    </li>
+                    <!-- Logout Button -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <div class="main-content">
+        <div id="product-list">
+            <!-- Display product listings -->
+        </div>
+    </div>
+
+
+
+    <footer class="footer">
+        <div class="container-fluid bg-dark text-white py-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Contact Us</h5>
+                    <p>Phone: +123456789</p>
+                    <p>Location: Your Location</p>
+                    <p>Email: info@example.com</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Follow Us</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="bg-secondary text-center py-2">
+            <p>&copy; 2024 Home Collection. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        $(document).ready(function() {
+            console.log("Document is ready");
+            const category = 'office'; 
+
+            // Fetch living room products from the server
+            $.ajax({
+                url: '/api/products',
+                type: 'GET',
+                data: { category: category },
+                success: function(products) {
+                    console.log('Office products fetched successfully:', products);
+                    const productContainer = $('#product-list');
+                    productContainer.empty(); // Clear existing content
+                    products.forEach(product => {
+                        if (product.stock > 0) { // Check if the product stock is greater than 0
+                            const productListing = `
+                                <div class="product">
+                                    <h5>${product.name}</h5>
+                                    <img src="${product.image}" alt="${product.name}" style="width:100px;height:auto;">
+                                    <p>Category: ${product.category}</p>
+                                    <p>Price: $${product.price}</p>
+                                    <p>Stock: ${product.stock}</p>
+                                    <button class="add-to-cart-btn" data-product-id="${product.id}">Add to Cart</button>
+                                </div>
+                            `;
+                            productContainer.append(productListing); // Append only if stock is above 0
+                        }
+                    });
+
+                    // Add event listener for "Add to Cart" button clicks
+                    $('.add-to-cart-btn').click(function() {
+                        const productId = $(this).data('product-id');
+                        addToCart(productId);
+                    });
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    console.log('Error fetching living room products:', textStatus, errorThrown);
+                    alert('Error fetching products');
+                }
+            });
+
+            // Function to add item to cart
+            function addToCart(productId) {
+                $.ajax({
+                    url: '/api/cart',
+                    type: 'POST',
+                    data: { productId: productId },
+                    success: function(response) {
+                        console.log('Item added to cart:', response);
+                        alert('Product added to cart successfully!');
+                        updateCartDisplay();
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        console.log('Error adding item to cart:', textStatus, errorThrown);
+                        alert('Failed to add item to cart. Please try again.');
+                    }
+                });
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('search-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                var searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+
+                switch (searchQuery) {
+                    case 'living':
+                        window.location.href = 'living.html';
+                        break;
+                    case 'dining':
+                        window.location.href = 'dining.html';
+                        break;
+                    case 'bedroom':
+                        window.location.href = 'bedroom.html';
+                        break;
+                    case 'office':
+                        window.location.href = 'office.html';
+                        break;
+                    default:
+                        alert('Invalid search. Please try again.');
+                        break;
+                }
+            });
+        });
+    </script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script> <!-- Font Awesome icons -->
+    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script> 
+</body>
+</html>
