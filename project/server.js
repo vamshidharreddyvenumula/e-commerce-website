@@ -16,7 +16,7 @@ const connection = mysql.createConnection({
 });
 app.use(express.json());
 app.use(session({
-    secret: 'your-secret-key', // Change this to a secure key
+    secret: 'your-secret-key', 
     resave: false,
     saveUninitialized: true
 }));
