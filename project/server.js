@@ -374,17 +374,42 @@ app.get('/api/search', (req, res) => {
     });
 });
 
-
+// Add a new route to fetch all product IDs
+app.get('/admin/products', (req, res) => {
+    // Query the database to retrieve all products
+    const sql = 'SELECT id, name FROM products';
+    connection.query(sql, (err, results) => {
+        if (err) {
+            console.error('Error fetching products:', err);
+            return res.status(500).send('Server error while fetching products');
+        }
+        // Extract IDs and names from the results
+        const products = results.map(({ id, name }) => ({ id, name }));
+        res.json(products);
+    });
+});
 
 // Edit Product
-app.post('/admin/edit-product', (req, res) => {
-    const { id, name, category, price, stock } = req.body;
-    const sql = 'UPDATE products SET name = ?, category = ?, price = ?, stock = ? WHERE id = ?';
-    connection.query(sql, [name, category, price, stock, id], (err, result) => {
+app.post('/admin/edit-product', upload.single('image'), (req, res) => {
+    const { id, name, category, price, stock, size } = req.body;
+    let params = [name, category, price, stock, size];
+    let sql = 'UPDATE products SET name = ?, category = ?, price = ?, stock = ?, size = ?';
+
+    if (req.file) {
+        sql += ', image = ?';
+        params.push(`/images/${req.file.filename}`);
+    }
+
+    sql += ' WHERE id = ?';
+    params.push(id); // Ensure ID is the last parameter
+
+    connection.query(sql, params, (err, result) => {
         if (err) {
             console.error('Error editing product:', err);
-            res.status(500).send('Server error while editing product');
-            return;
+            return res.status(500).send('Server error while editing product');
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send('Product not found');
         }
         res.send('Product edited successfully');
     });
