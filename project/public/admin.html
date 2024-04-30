@@ -31,7 +31,8 @@
         </form>
 
         <h2>Edit Product</h2>
-        <form action="/admin/add-product" method="post" enctype="multipart/form-data">
+        <form action="/admin/edit-product" method="post" enctype="multipart/form-data">
+            <input type="number" name="id" placeholder="Product ID" required>
             <input type="text" name="name" placeholder="Product Name" required>
             <select name="category">
                 <option value="living">Living</option>
@@ -46,8 +47,8 @@
             </select>
             <input type="number" name="price" placeholder="Price" required>
             <input type="number" name="stock" placeholder="Stock Availability" required>
-            <input type="file" name="image" accept="image/*" required> <!-- File input for images -->
-            <button type="submit">Add Product</button>
+            <input type="file" name="image" accept="image/*"> <!-- This may not be required every time -->
+            <button type="submit">Edit Product</button>
         </form>
         
 
@@ -80,6 +81,7 @@
             <!-- Sales data will be injected here -->
         </tbody>
     </table>
+    <div id="productInfoContainer"></div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -113,6 +115,18 @@
 
             
 
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const editForm = document.querySelector('form[action="/admin/edit-product"]');
+            editForm.addEventListener('submit', function(event) {
+                const idInput = document.querySelector('input[name="id"]');
+                if (!idInput.value) {
+                    alert('Product ID is required for editing.');
+                    event.preventDefault(); // Stop the form from submitting
+                }
+            });
         });
     </script>
     <script>
@@ -162,6 +176,24 @@
                     .catch(error => console.error('Error fetching sales reports:', error));
             }
         </script>
+    <script>
+        // Fetch product IDs and names from the server
+        fetch('/admin/products')
+            .then(response => response.json())
+            .then(products => {
+                // Update the UI with product IDs and names
+                const productInfoContainer = document.getElementById('productInfoContainer');
+                productInfoContainer.innerHTML = '<h2>Available Products:</h2>';
+                const ul = document.createElement('ul');
+                products.forEach(product => {
+                    const li = document.createElement('li');
+                    li.textContent = `ID: ${product.id}, Name: ${product.name}`;
+                    ul.appendChild(li);
+                });
+                productInfoContainer.appendChild(ul);
+            })
+            .catch(error => console.error('Error fetching product info:', error));
+    </script>
         
 
     
